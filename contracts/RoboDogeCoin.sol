@@ -540,7 +540,7 @@ contract Ownable is Context {
     }
 }
 
-contract RoboDogeFinalCoin is Context, IERC20, Ownable {
+contract RoboDogeCoin is Context, IERC20, Ownable {
     using SafeMath for uint256;
     using Address for address;
 
