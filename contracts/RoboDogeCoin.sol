@@ -1139,7 +1139,7 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
     }
 
     function checkPercent(uint256 currentPrice,uint256 referencePrice) internal pure returns (uint256){
-        return ((referencePrice.sub(currentPrice)).mul(100)).div(referencePrice);
+        return (((referencePrice.sub(currentPrice)).mul(100)).mul(1e18).div(referencePrice));
     }
 
     function isHalted() external view returns(bool){
@@ -1156,7 +1156,7 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
         if(currentPrice < referencePrice){   
             if(currentHaltLevel == HaltLevelStatus.LEVEL0){
                 percentDecline = checkPercent(currentPrice,referencePrice);
-                if(percentDecline >= halts[1].haltLevelPercentage){
+                if(percentDecline >= (halts[1].haltLevelPercentage.mul(1e18))){
                     //set Level index halt   
                     currentHaltPeriod = block.timestamp + halts[1].haltLevelPeriod;
                     currentHaltLevel = halts[1].haltLevel;
@@ -1168,7 +1168,7 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
             if(currentHaltLevel == HaltLevelStatus.LEVEL1 || currentHaltLevel == HaltLevelStatus.LEVEL2 ){
                 uint i = uint(currentHaltLevel);
                 percentDecline = checkPercent(currentPrice,currentLowestPrice);
-                if(percentDecline >= halts[i+1].haltLevelPercentage){
+                if(percentDecline >= (halts[i+1].haltLevelPercentage.mul(1e18))){
                     //set Level index halt 
                     
                     currentHaltPeriod = block.timestamp + halts[i+1].haltLevelPeriod;
@@ -1182,7 +1182,7 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
             if(currentHaltLevel == HaltLevelStatus.LEVEL3 ){
                 //add percentage check
                 percentDecline = checkPercent(currentPrice,referencePrice);
-                if(percentDecline >= halts[1].haltLevelPercentage){
+                if(percentDecline >= (halts[1].haltLevelPercentage.mul(1e18))){
                     currentHaltPeriod = block.timestamp + halts[1].haltLevelPeriod;
                     currentHaltLevel = halts[1].haltLevel;
                     currentLowestPrice = currentPrice;
