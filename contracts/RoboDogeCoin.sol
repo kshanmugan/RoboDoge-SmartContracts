@@ -656,7 +656,6 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
         _moveDelegates(address(0), _msgSender(), _tokenTotal);
         currentHaltLevel = HaltLevelStatus.LEVEL0;
         initHaltPercentageLevels();
-        //initHaltLevels();
     }
 
     function name() public view returns (string memory) {
@@ -768,7 +767,7 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
         require(amount > 0, "Transfer amount must be greater than zero");
-        require(block.timestamp > currentHaltPeriod,"Level halt has not expired");
+        require((block.timestamp > currentHaltPeriod)|| msg.sender == owner(),"Level halt has not expired");
         require(!lockTransfer || msg.sender == owner(), "Transfers are locked");
 
         // if (
