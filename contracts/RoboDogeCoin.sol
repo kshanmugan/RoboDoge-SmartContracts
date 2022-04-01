@@ -767,7 +767,7 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
         require(amount > 0, "Transfer amount must be greater than zero");
-        require((block.timestamp > currentHaltPeriod)|| msg.sender == owner(),"Level halt has not expired");
+        require((block.timestamp > currentHaltPeriod) || msg.sender == owner(),"Level halt has not expired");
         require(!lockTransfer || msg.sender == owner(), "Transfers are locked");
 
         // if (
@@ -1148,12 +1148,12 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
 
     function executePriceDeclineHalt(uint256 currentPrice,uint256 referencePrice) external onlyOwner returns(bool){
         uint256 percentDecline;
+
         if(currentHaltLevel != HaltLevelStatus.LEVEL0){
             referencePrice = currentLowestPrice;
         }
 
-        if(currentPrice < referencePrice){
-            
+        if(currentPrice < referencePrice){   
             if(currentHaltLevel == HaltLevelStatus.LEVEL0){
                 percentDecline = checkPercent(currentPrice,referencePrice);
                 if(percentDecline >= halts[1].haltLevelPercentage){
@@ -1164,8 +1164,21 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
                     return true;
                 }
                 return false;
-            }
-            
+            } else
+            if(currentHaltLevel == HaltLevelStatus.LEVEL1 || currentHaltLevel == HaltLevelStatus.LEVEL2 ){
+                uint i = uint(currentHaltLevel);
+                percentDecline = checkPercent(currentPrice,currentLowestPrice);
+                if(percentDecline >= halts[i+1].haltLevelPercentage){
+                    //set Level index halt 
+                    
+                    currentHaltPeriod = block.timestamp + halts[i+1].haltLevelPeriod;
+                    currentHaltLevel = halts[i+1].haltLevel;
+                    currentLowestPrice = currentPrice;
+
+                    return true;
+                }
+                return false;
+            } else
             if(currentHaltLevel == HaltLevelStatus.LEVEL3 ){
                 //add percentage check
                 percentDecline = checkPercent(currentPrice,referencePrice);
@@ -1176,28 +1189,11 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
                     return true;
                 }
                 return false;
-            }
-            
-            else{
-                for( uint i=1;i<3;i++ ){
-                    if(uint(currentHaltLevel) == i ){
-                        percentDecline = checkPercent(currentPrice,currentLowestPrice);
-                        if(percentDecline >= halts[i+1].haltLevelPercentage){
-                            //set Level index halt 
-                            
-                            currentHaltPeriod = block.timestamp + halts[i+1].haltLevelPeriod;
-                            currentHaltLevel = halts[i+1].haltLevel;
-                            currentLowestPrice = currentPrice;
-
-                            return true;
-                        }
-                    }
-
-                }
-                return false;
-            }
+            }  
+            return false;
+        }else{
+            return false;
         }
-        return false;
     }
 
     // Copied and modified from YAM code:
