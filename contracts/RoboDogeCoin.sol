@@ -1139,7 +1139,7 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
 
     }
 
-    function checkPercent(uint256 currentPrice,uint256 referencePrice) public view returns (uint256){
+    function checkPercent(uint256 currentPrice,uint256 referencePrice) internal view returns (uint256){
         return (((referencePrice.sub(currentPrice)).mul(100)).mul(ACCURACY).div(referencePrice));
     }
 
