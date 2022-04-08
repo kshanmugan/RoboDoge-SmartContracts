@@ -582,7 +582,7 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
     address public marketingFeeAddress; // marketing wallet
     address public liquidityManager; // address which will manually add liquidity to pool
 
-
+    uint public timeDurationForExtraPenaltyTax;// 
     //3 Level Halt Mechanism
     uint internal constant ACCURACY = 1e18;
     uint256 public currentLowestPrice;
@@ -657,6 +657,7 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
         _moveDelegates(address(0), _msgSender(), _tokenTotal);
         currentHaltLevel = HaltLevelStatus.LEVEL0;
         initHaltPercentageLevels();
+        timeDurationForExtraPenaltyTax = 1 weeks;
     }
 
     function name() public view returns (string memory) {
@@ -966,7 +967,9 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
         _moveDelegates(_delegates[msg.sender], _delegates[address(0)], amount);
         emit Transfer(msg.sender, address(0), amount);
     }
-
+    function setTimeDurationForExtraPenaltyTax(uint _duration) external onlyOwner {
+        timeDurationForExtraPenaltyTax = _duration;
+    }
     function collectFee(address account, uint256 amount, uint256 rate) private returns (uint256) {
         
         uint256 transferAmount = amount;
@@ -978,7 +981,7 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
         uint256 marketingFee = amount.mul(_marketingFee).div(DENOMINATOR);
 
         // DEDUCTS EXTRA 17% IF POSITION SOLD WITHIN ONE WEEK OF OPENING
-        if (block.timestamp <= firstBuy[account] + 1 weeks) {
+        if (block.timestamp <= firstBuy[account] + timeDurationForExtraPenaltyTax) {
             uint256 extraTax = amount.mul(_earlySellFee).div(DENOMINATOR);
             transferAmount = transferAmount.sub(extraTax);
             _reflectionBalance[reservePoolAddress] = _reflectionBalance[reservePoolAddress].add(extraTax.mul(rate));
@@ -1139,7 +1142,7 @@ contract RoboDogeCoin is Context, IERC20, Ownable {
 
     }
 
-    function checkPercent(uint256 currentPrice,uint256 referencePrice) public view returns (uint256){
+    function checkPercent(uint256 currentPrice,uint256 referencePrice) internal pure returns (uint256){
         return (((referencePrice.sub(currentPrice)).mul(100)).mul(ACCURACY).div(referencePrice));
     }
 
